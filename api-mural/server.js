@@ -198,7 +198,8 @@ app.put('/api/posts/:id', async (req, res) => {
 
 
 const PORT = process.env.PORT || 80;
-app.listen(PORT, () => {
+// 0.0.0.0 = aceita conexões de fora da EC2/Cloud9 (não só localhost)
+app.listen(PORT, '0.0.0.0', () => {
     console.log('Api funcionando');
     console.log(`Cardápio: GET http://localhost:${PORT}/pratos`);
 });
