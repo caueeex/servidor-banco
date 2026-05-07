@@ -1,7 +1,9 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -28,14 +30,25 @@ export default function CarrinhoScreen() {
     limparCarrinho,
   } = useCarrinho();
 
-  const finalizar = () => {
+  const [modalConfirmarVisivel, setModalConfirmarVisivel] = useState(false);
+
+  const abrirModalConfirmacao = () => {
     if (itens.length === 0) return;
+    setModalConfirmarVisivel(true);
+  };
+
+  const fecharModalConfirmacao = () => setModalConfirmarVisivel(false);
+
+  const confirmarEFinalizarPedido = () => {
     limparCarrinho();
+    setModalConfirmarVisivel(false);
     Alert.alert(
       'Pedido finalizado!',
       'Obrigado pela preferência. Seu carrinho foi esvaziado (simulação).'
     );
   };
+
+  const totalItens = itens.reduce((acc, i) => acc + i.quantidade, 0);
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -83,12 +96,56 @@ export default function CarrinhoScreen() {
             </View>
             <TouchableOpacity
               style={styles.btnFinalizar}
-              onPress={finalizar}
+              onPress={abrirModalConfirmacao}
               activeOpacity={0.9}
             >
               <Text style={styles.btnFinalizarTexto}>Finalizar Pedido</Text>
             </TouchableOpacity>
           </View>
+
+          <Modal
+            visible={modalConfirmarVisivel}
+            transparent
+            animationType="fade"
+            onRequestClose={fecharModalConfirmacao}
+          >
+            <Pressable
+              style={styles.modalOverlay}
+              onPress={fecharModalConfirmacao}
+            >
+              <View style={styles.modalCaixa}>
+                <Text style={styles.modalTitulo}>Confirmar pedido?</Text>
+                <Text style={styles.modalTexto}>
+                  Você está finalizando {totalItens}{' '}
+                  {totalItens === 1 ? 'item' : 'itens'} por{' '}
+                  <Text style={styles.modalTotal}>
+                    {formatarPrecoBR(totalPreco)}
+                  </Text>
+                  .
+                </Text>
+                <Text style={styles.modalSub}>
+                  O carrinho será esvaziado após a confirmação (simulação).
+                </Text>
+
+                <View style={styles.modalBotoes}>
+                  <TouchableOpacity
+                    style={styles.modalBtnSecundario}
+                    onPress={fecharModalConfirmacao}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.modalBtnSecundarioTexto}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalBtnPrimario}
+                    onPress={confirmarEFinalizarPedido}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.modalBtnPrimarioTexto}>Confirmar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Pressable>
+          </Modal>
         </>
       )}
     </SafeAreaView>
@@ -171,5 +228,73 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 17,
     fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  modalCaixa: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  modalTitulo: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: CORES.texto,
+    marginBottom: 12,
+  },
+  modalTexto: {
+    fontSize: 15,
+    color: CORES.textoSecundario,
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+  modalTotal: {
+    fontWeight: '700',
+    color: CORES.primaria,
+  },
+  modalSub: {
+    fontSize: 13,
+    color: CORES.textoSecundario,
+    marginBottom: 22,
+    lineHeight: 18,
+  },
+  modalBotoes: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalBtnSecundario: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e8ecf1',
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+  },
+  modalBtnSecundarioTexto: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: CORES.textoSecundario,
+  },
+  modalBtnPrimario: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: CORES.primaria,
+  },
+  modalBtnPrimarioTexto: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
   },
 });
